@@ -1,9 +1,9 @@
 <?php
 // ─── Base de données ──────────────────────────────────────────
 define('DB_HOST',    'localhost');
-define('DB_NAME',    'lbojmfpa_rag');
-define('DB_USER',    'lbojmfpa_cyver');
-define('DB_PASS',    'Wynnrckr@2008');
+define('DB_NAME',    'rag');
+define('DB_USER',    'sanji');
+define('DB_PASS',    'wynnrckr');
 define('DB_CHARSET', 'utf8mb4');
 
 // ─── Webhooks n8n ─────────────────────────────────────────────
