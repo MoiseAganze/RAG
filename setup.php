@@ -67,7 +67,7 @@ if ($count > 0) {
 
     <?php elseif ($error && $count > 0): ?>
       <div class="card"><div class="card-body">
-        <div class="alert alert-error"><?= htmlspecialchars($error) ?></div>
+        <div class="alert alert-error"><?php echo htmlspecialchars($error) ?></div>
         <a href="login.php" class="btn btn-primary" style="align-self:center;margin-top:8px;">Aller à la connexion</a>
       </div></div>
 
@@ -78,22 +78,22 @@ if ($count > 0) {
           <div class="setup-sub">Créez le premier compte administrateur.</div>
         </div>
         <?php if ($error): ?>
-          <div class="alert alert-error"><?= htmlspecialchars($error) ?></div>
+          <div class="alert alert-error"><?php echo htmlspecialchars($error) ?></div>
         <?php endif; ?>
         <form method="POST" style="display:flex;flex-direction:column;gap:14px;">
           <div class="form-row">
             <div class="form-group">
               <label class="form-label">Prénom</label>
-              <input class="form-input" type="text" name="prenom" required value="<?= htmlspecialchars($_POST['prenom'] ?? '') ?>" />
+              <input class="form-input" type="text" name="prenom" required value="<?php echo htmlspecialchars($_POST['prenom'] ?? '') ?>" />
             </div>
             <div class="form-group">
               <label class="form-label">Nom</label>
-              <input class="form-input" type="text" name="nom" required value="<?= htmlspecialchars($_POST['nom'] ?? '') ?>" />
+              <input class="form-input" type="text" name="nom" required value="<?php echo htmlspecialchars($_POST['nom'] ?? '') ?>" />
             </div>
           </div>
           <div class="form-group">
             <label class="form-label">Matricule</label>
-            <input class="form-input" type="text" name="matricule" required value="<?= htmlspecialchars($_POST['matricule'] ?? '') ?>" placeholder="ex : ADMIN001" />
+            <input class="form-input" type="text" name="matricule" required value="<?php echo htmlspecialchars($_POST['matricule'] ?? '') ?>" placeholder="ex : ADMIN001" />
           </div>
           <div class="form-group">
             <label class="form-label">Mot de passe</label>

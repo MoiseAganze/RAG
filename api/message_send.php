@@ -78,8 +78,8 @@ $ins->execute([$convId, 'assistant', $answer]);
 // Auto-title on first message
 $newTitle = null;
 if ($isFirst) {
-    $newTitle = mb_substr($question, 0, 72);
-    if (mb_strlen($question) > 72) $newTitle .= '…';
+    $newTitle = substr($question, 0, 72);
+    if (strlen($question) > 72) $newTitle .= '…';
     $upd = $pdo->prepare("UPDATE conversations SET title = ?, updated_at = NOW() WHERE id = ?");
     $upd->execute([$newTitle, $convId]);
 } else {

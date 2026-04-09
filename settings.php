@@ -97,13 +97,13 @@ $dbUser = $dbUser->fetch();
         <?php if ($success): ?>
           <div class="alert alert-success">
             <svg fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="2" style="width:15px;height:15px;flex-shrink:0"><path stroke-linecap="round" stroke-linejoin="round" d="M9 12l2 2 4-4m6 2a9 9 0 11-18 0 9 9 0 0118 0z"/></svg>
-            <?= htmlspecialchars($success) ?>
+            <?php echo htmlspecialchars($success) ?>
           </div>
         <?php endif; ?>
         <?php if ($error): ?>
           <div class="alert alert-error">
             <svg fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="2" style="width:15px;height:15px;flex-shrink:0"><path stroke-linecap="round" stroke-linejoin="round" d="M12 9v3.75m9-.75a9 9 0 11-18 0 9 9 0 0118 0zm-9 3.75h.008v.008H12v-.008z"/></svg>
-            <?= htmlspecialchars($error) ?>
+            <?php echo htmlspecialchars($error) ?>
           </div>
         <?php endif; ?>
 
@@ -118,13 +118,13 @@ $dbUser = $dbUser->fetch();
             <!-- Avatar display -->
             <div style="display:flex;align-items:center;gap:14px;">
               <div style="width:44px;height:44px;border-radius:50%;background:var(--accent-dim);border:1px solid rgba(201,169,110,0.3);display:flex;align-items:center;justify-content:center;font-family:var(--font-serif);font-style:italic;font-size:18px;color:var(--accent);flex-shrink:0;">
-                <?= strtoupper(mb_substr($dbUser['prenom'], 0, 1)) ?>
+                <?php echo strtoupper(substr($dbUser['prenom'], 0, 1)) ?>
               </div>
               <div>
-                <div style="font-size:15px;font-weight:500;"><?= htmlspecialchars($dbUser['prenom'] . ' ' . $dbUser['nom']) ?></div>
+                <div style="font-size:15px;font-weight:500;"><?php echo htmlspecialchars($dbUser['prenom'] . ' ' . $dbUser['nom']) ?></div>
                 <div style="font-size:12.5px;color:var(--text-muted);margin-top:2px;">
-                  <?= $dbUser['role'] === 'admin_full' ? 'Administrateur complet' : 'Administrateur chat' ?>
-                  &nbsp;·&nbsp; <span style="font-family:monospace;"><?= htmlspecialchars($dbUser['matricule']) ?></span>
+                  <?php echo $dbUser['role'] === 'admin_full' ? 'Administrateur complet' : 'Administrateur chat' ?>
+                  &nbsp;·&nbsp; <span style="font-family:monospace;"><?php echo htmlspecialchars($dbUser['matricule']) ?></span>
                 </div>
               </div>
             </div>
@@ -136,16 +136,16 @@ $dbUser = $dbUser->fetch();
               <div style="display:flex;gap:12px;">
                 <div class="form-group" style="flex:1">
                   <label class="form-label">Prénom</label>
-                  <input class="form-input" type="text" name="prenom" required value="<?= htmlspecialchars($dbUser['prenom']) ?>" />
+                  <input class="form-input" type="text" name="prenom" required value="<?php echo htmlspecialchars($dbUser['prenom']) ?>" />
                 </div>
                 <div class="form-group" style="flex:1">
                   <label class="form-label">Nom</label>
-                  <input class="form-input" type="text" name="nom" required value="<?= htmlspecialchars($dbUser['nom']) ?>" />
+                  <input class="form-input" type="text" name="nom" required value="<?php echo htmlspecialchars($dbUser['nom']) ?>" />
                 </div>
               </div>
               <div class="form-group">
                 <label class="form-label">Matricule</label>
-                <input class="form-input" type="text" value="<?= htmlspecialchars($dbUser['matricule']) ?>" readonly />
+                <input class="form-input" type="text" value="<?php echo htmlspecialchars($dbUser['matricule']) ?>" readonly />
                 <span class="form-hint">Le matricule ne peut pas être modifié.</span>
               </div>
               <div>

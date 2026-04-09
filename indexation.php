@@ -194,17 +194,17 @@ $docs = $pdo->query(
               <?php foreach ($docs as $d): ?>
               <tr>
                 <td>
-                  <div style="font-size:13.5px;font-weight:500;"><?= htmlspecialchars($d['original_name']) ?></div>
-                  <div style="font-size:11.5px;color:var(--text-muted);margin-top:2px;"><?= htmlspecialchars($d['mime_type']) ?></div>
+                  <div style="font-size:13.5px;font-weight:500;"><?php echo htmlspecialchars($d['original_name']) ?></div>
+                  <div style="font-size:11.5px;color:var(--text-muted);margin-top:2px;"><?php echo htmlspecialchars($d['mime_type']) ?></div>
                 </td>
-                <td style="color:var(--text-muted);font-size:13px;"><?= formatFileSize((int)$d['file_size']) ?></td>
-                <td style="font-size:13px;"><?= htmlspecialchars($d['prenom'] . ' ' . $d['nom']) ?></td>
-                <td style="color:var(--text-muted);font-size:12.5px;white-space:nowrap;"><?= date('d/m/Y H:i', strtotime($d['created_at'])) ?></td>
+                <td style="color:var(--text-muted);font-size:13px;"><?php echo formatFileSize((int)$d['file_size']) ?></td>
+                <td style="font-size:13px;"><?php echo htmlspecialchars($d['prenom'] . ' ' . $d['nom']) ?></td>
+                <td style="color:var(--text-muted);font-size:12.5px;white-space:nowrap;"><?php echo date('d/m/Y H:i', strtotime($d['created_at'])) ?></td>
                 <td style="text-align:center;">
                   <?php if ($d['status'] === 'success'): ?>
                     <span class="badge badge-full">OK</span>
                   <?php else: ?>
-                    <span class="badge badge-chat" style="background:var(--error-bg);color:var(--error);border-color:var(--error-border);" title="<?= htmlspecialchars($d['error_msg'] ?? '') ?>">Erreur</span>
+                    <span class="badge badge-chat" style="background:var(--error-bg);color:var(--error);border-color:var(--error-border);" title="<?php echo htmlspecialchars($d['error_msg'] ?? '') ?>">Erreur</span>
                   <?php endif; ?>
                 </td>
               </tr>

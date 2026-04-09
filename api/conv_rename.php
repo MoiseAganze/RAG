@@ -17,7 +17,7 @@ if (!$convId || $title === '') {
     exit;
 }
 
-$title = mb_substr($title, 0, 255);
+$title = substr($title, 0, 255);
 
 $stmt = $pdo->prepare(
     "UPDATE conversations SET title = ? WHERE id = ? AND user_id = ?"

@@ -290,7 +290,7 @@ if (!empty($_GET['conv'])) {
   applyTheme(localStorage.getItem('rag-theme') || 'dark');
 
   // ─── State ──────────────────────────────────────────────────────────────
-  let currentConvId = <?= $activeConvId ?>;
+  let currentConvId = <?php echo $activeConvId ?>;
 
   // ─── Utils ──────────────────────────────────────────────────────────────
   function escapeHtml(s) {

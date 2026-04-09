@@ -104,13 +104,13 @@ $admins = $pdo->query("SELECT id, matricule, nom, prenom, role, created_at FROM 
         <?php if ($success): ?>
           <div class="alert alert-success">
             <svg fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="2" style="width:15px;height:15px;flex-shrink:0"><path stroke-linecap="round" stroke-linejoin="round" d="M9 12l2 2 4-4m6 2a9 9 0 11-18 0 9 9 0 0118 0z"/></svg>
-            <?= htmlspecialchars($success) ?>
+            <?php echo htmlspecialchars($success) ?>
           </div>
         <?php endif; ?>
         <?php if ($error): ?>
           <div class="alert alert-error">
             <svg fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="2" style="width:15px;height:15px;flex-shrink:0"><path stroke-linecap="round" stroke-linejoin="round" d="M12 9v3.75m9-.75a9 9 0 11-18 0 9 9 0 0118 0zm-9 3.75h.008v.008H12v-.008z"/></svg>
-            <?= htmlspecialchars($error) ?>
+            <?php echo htmlspecialchars($error) ?>
           </div>
         <?php endif; ?>
 
@@ -123,16 +123,16 @@ $admins = $pdo->query("SELECT id, matricule, nom, prenom, role, created_at FROM 
               <div style="display:flex;gap:12px;">
                 <div class="form-group" style="flex:1">
                   <label class="form-label">Prénom</label>
-                  <input class="form-input" type="text" name="prenom" required value="<?= htmlspecialchars($_POST['prenom'] ?? '') ?>" />
+                  <input class="form-input" type="text" name="prenom" required value="<?php echo htmlspecialchars($_POST['prenom'] ?? '') ?>" />
                 </div>
                 <div class="form-group" style="flex:1">
                   <label class="form-label">Nom</label>
-                  <input class="form-input" type="text" name="nom" required value="<?= htmlspecialchars($_POST['nom'] ?? '') ?>" />
+                  <input class="form-input" type="text" name="nom" required value="<?php echo htmlspecialchars($_POST['nom'] ?? '') ?>" />
                 </div>
               </div>
               <div class="form-group">
                 <label class="form-label">Matricule</label>
-                <input class="form-input" type="text" name="matricule" required placeholder="ex : USR002" value="<?= htmlspecialchars($_POST['matricule'] ?? '') ?>" />
+                <input class="form-input" type="text" name="matricule" required placeholder="ex : USR002" value="<?php echo htmlspecialchars($_POST['matricule'] ?? '') ?>" />
               </div>
               <div class="form-group">
                 <label class="form-label">Mot de passe temporaire</label>
@@ -141,8 +141,8 @@ $admins = $pdo->query("SELECT id, matricule, nom, prenom, role, created_at FROM 
               <div class="form-group">
                 <label class="form-label">Rôle</label>
                 <select class="form-select" name="role">
-                  <option value="admin_chat" <?= (($_POST['role'] ?? '') === 'admin_chat') ? 'selected' : '' ?>>Chat uniquement</option>
-                  <option value="admin_full" <?= (($_POST['role'] ?? '') === 'admin_full') ? 'selected' : '' ?>>Accès complet (chat + indexation)</option>
+                  <option value="admin_chat" <?php echo (($_POST['role'] ?? '') === 'admin_chat') ? 'selected' : '' ?>>Chat uniquement</option>
+                  <option value="admin_full" <?php echo (($_POST['role'] ?? '') === 'admin_full') ? 'selected' : '' ?>>Accès complet (chat + indexation)</option>
                 </select>
               </div>
               <div>
@@ -170,33 +170,33 @@ $admins = $pdo->query("SELECT id, matricule, nom, prenom, role, created_at FROM 
               <?php foreach ($admins as $a): ?>
               <tr>
                 <td>
-                  <div style="font-weight:500;"><?= htmlspecialchars($a['prenom'] . ' ' . $a['nom']) ?></div>
+                  <div style="font-weight:500;"><?php echo htmlspecialchars($a['prenom'] . ' ' . $a['nom']) ?></div>
                   <?php if ($a['id'] === $user['id']): ?>
                     <div style="font-size:11px;color:var(--text-muted);margin-top:2px;">Vous</div>
                   <?php endif; ?>
                 </td>
-                <td><span class="matricule-tag"><?= htmlspecialchars($a['matricule']) ?></span></td>
+                <td><span class="matricule-tag"><?php echo htmlspecialchars($a['matricule']) ?></span></td>
                 <td>
                   <?php if ($a['id'] !== $user['id']): ?>
                     <form method="POST" style="display:inline;">
                       <input type="hidden" name="action"    value="change_role" />
-                      <input type="hidden" name="target_id" value="<?= $a['id'] ?>" />
+                      <input type="hidden" name="target_id" value="<?php echo $a['id'] ?>" />
                       <select class="form-select" name="new_role" onchange="this.form.submit()" style="width:auto;padding:4px 28px 4px 10px;font-size:12.5px;">
-                        <option value="admin_chat" <?= $a['role'] === 'admin_chat' ? 'selected' : '' ?>>Chat</option>
-                        <option value="admin_full" <?= $a['role'] === 'admin_full' ? 'selected' : '' ?>>Complet</option>
+                        <option value="admin_chat" <?php echo $a['role'] === 'admin_chat' ? 'selected' : '' ?>>Chat</option>
+                        <option value="admin_full" <?php echo $a['role'] === 'admin_full' ? 'selected' : '' ?>>Complet</option>
                       </select>
                     </form>
                   <?php else: ?>
-                    <span class="badge <?= $a['role'] === 'admin_full' ? 'badge-full' : 'badge-chat' ?>">
-                      <?= $a['role'] === 'admin_full' ? 'Complet' : 'Chat' ?>
+                    <span class="badge <?php echo $a['role'] === 'admin_full' ? 'badge-full' : 'badge-chat' ?>">
+                      <?php echo $a['role'] === 'admin_full' ? 'Complet' : 'Chat' ?>
                     </span>
                   <?php endif; ?>
                 </td>
                 <td style="text-align:right;">
                   <?php if ($a['id'] !== $user['id']): ?>
-                    <form method="POST" style="display:inline;" onsubmit="return confirm('Supprimer « <?= htmlspecialchars($a['prenom'] . ' ' . $a['nom']) ?> » ?');">
+                    <form method="POST" style="display:inline;" onsubmit="return confirm('Supprimer « <?php echo htmlspecialchars($a['prenom'] . ' ' . $a['nom']) ?> » ?');">
                       <input type="hidden" name="action"    value="delete" />
-                      <input type="hidden" name="target_id" value="<?= $a['id'] ?>" />
+                      <input type="hidden" name="target_id" value="<?php echo $a['id'] ?>" />
                       <button type="submit" class="btn btn-ghost btn-sm btn-danger">
                         <svg xmlns="http://www.w3.org/2000/svg" width="13" height="13" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="2"><path stroke-linecap="round" stroke-linejoin="round" d="M19 7l-.867 12.142A2 2 0 0116.138 21H7.862a2 2 0 01-1.995-1.858L5 7m5 4v6m4-6v6M9 7h6m2 0a1 1 0 00-1-1h-4a1 1 0 00-1 1H5"/></svg>
                         Supprimer
