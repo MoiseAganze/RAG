@@ -369,18 +369,19 @@ function formatFileSize(int $b): string {
       wipeBtn.innerHTML = `<div class="spinner" style="border-color:rgba(255,90,90,0.2);border-top-color:var(--error);width:14px;height:14px;border-width:2px;margin-right:6px;"></div> Suppression...`;
       
       try {
-        const res = await fetch('http://148.230.120.123:32768/collections/test_rag_v2', {
-          method: 'DELETE',
+        const res = await fetch('api/memory_wipe.php', {
+          method: 'POST',
           headers: {
-            'Authorization': 'Bearer iGlWfzD7ykHU5VkURuoXyBuh7sNt4FZ9',
             'Content-Type': 'application/json'
           }
         });
+        const data = await res.json().catch(() => ({}));
         
-        if (res.ok) {
-          showToast('Mémoire de l\'IA vidée avec succès !');
+        if (res.ok && data.success) {
+          showToast(`Mémoire de l'IA vidée avec succès ! ${data.deleted_documents ?? 0} document(s) et ${data.deleted_files ?? 0} fichier(s) supprimé(s).`);
+          setTimeout(() => location.reload(), 1200);
         } else {
-          showToast('Erreur lors de la suppression de la mémoire.', 'error');
+          showToast(data.error || 'Erreur lors de la suppression de la mémoire.', 'error');
         }
       } catch (e) {
         showToast('Erreur de connexion au serveur IA.', 'error');
