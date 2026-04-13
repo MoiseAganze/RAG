@@ -379,6 +379,9 @@ function formatFileSize(int $b): string {
         
         if (res.ok && data.success) {
           showToast(`Mémoire de l'IA vidée avec succès ! ${data.deleted_documents ?? 0} document(s) et ${data.deleted_files ?? 0} fichier(s) supprimé(s).`);
+          if (data.warning) {
+            showToast(data.warning, 'error');
+          }
           setTimeout(() => location.reload(), 1200);
         } else {
           showToast(data.error || 'Erreur lors de la suppression de la mémoire.', 'error');

@@ -94,17 +94,15 @@ try {
         'Content-Type: application/json',
     ];
 
+    $remoteWarnings = [];
+
     $deleteResponse = sendRemoteRequest($collectionUrl, 'DELETE', $headers);
     if ($deleteResponse['error'] !== '') {
-        http_response_code(502);
-        echo json_encode(['success' => false, 'error' => 'Erreur lors de la suppression distante: ' . $deleteResponse['error']]);
-        exit;
+        $remoteWarnings[] = 'Suppression distante impossible: ' . $deleteResponse['error'];
     }
 
     if (!in_array($deleteResponse['http_code'], [200, 202, 204, 404], true)) {
-        http_response_code(502);
-        echo json_encode(['success' => false, 'error' => 'Erreur lors de la suppression distante: HTTP ' . $deleteResponse['http_code']]);
-        exit;
+        $remoteWarnings[] = 'Suppression distante échouée: HTTP ' . $deleteResponse['http_code'];
     }
 
     $failedPaths = [];
@@ -135,15 +133,11 @@ try {
 
     $putResponse = sendRemoteRequest($collectionUrl, 'PUT', $headers, $payload);
     if ($putResponse['error'] !== '') {
-        http_response_code(502);
-        echo json_encode(['success' => false, 'error' => 'Erreur lors de la recréation distante: ' . $putResponse['error']]);
-        exit;
+        $remoteWarnings[] = 'Recréation distante impossible: ' . $putResponse['error'];
     }
 
     if ($putResponse['http_code'] < 200 || $putResponse['http_code'] >= 300) {
-        http_response_code(502);
-        echo json_encode(['success' => false, 'error' => 'Erreur lors de la recréation distante: HTTP ' . $putResponse['http_code']]);
-        exit;
+        $remoteWarnings[] = 'Recréation distante échouée: HTTP ' . $putResponse['http_code'];
     }
 
     if (!empty($failedPaths)) {
@@ -153,6 +147,7 @@ try {
             'error' => 'Certains fichiers n’ont pas pu être supprimés du dossier uploads.',
             'deleted_documents' => $deletedDocuments,
             'deleted_files' => $deletedFiles,
+            'warning' => empty($remoteWarnings) ? null : implode(' | ', array_unique($remoteWarnings)),
         ]);
         exit;
     }
@@ -161,6 +156,7 @@ try {
         'success' => true,
         'deleted_documents' => $deletedDocuments,
         'deleted_files' => $deletedFiles,
+        'warning' => empty($remoteWarnings) ? null : implode(' | ', array_unique($remoteWarnings)),
     ]);
 } catch (Throwable $e) {
     http_response_code(500);
