@@ -354,7 +354,7 @@ function formatFileSize(int $b): string {
       setTimeout(() => location.reload(), 1200);
     } else {
       showToast(`${sent} succès · ${errors} échec${errors>1?'s':''}`, 'error');
-      setTimeout(() => location.reload(), 2000);
+      // Keep files in list on error so user can retry or see what failed
     }
   });
 
