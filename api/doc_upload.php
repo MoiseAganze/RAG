@@ -67,6 +67,15 @@ require_once __DIR__ . '/../includes/db.php';
      }
  }
 
+ function buildPublicDocumentUrl(string $storedName): string {
+     $baseUrl = defined('BASE_URL') ? trim((string) BASE_URL) : '';
+     if ($baseUrl === '') {
+         throw new RuntimeException('BASE_URL n’est pas configurée pour l’envoi de l’URL du document.');
+     }
+
+     return rtrim($baseUrl, '/') . '/uploads/' . rawurlencode($storedName);
+ }
+
 try {
     $user = jsonRequireRole('admin_full');
     $pdo  = getPDO();
@@ -137,50 +146,64 @@ try {
         throw new RuntimeException('Le fichier sauvegardé est illisible par PHP. Vérifiez les permissions du dossier uploads.');
     }
 
-    // ─── Forward to n8n webhook ───────────────────────────────────────────────
-    $webhookOk  = false;
-    $webhookErr = '';
+     // ─── Forward to n8n webhook ───────────────────────────────────────────────
+     $webhookOk   = false;
+     $webhookErr  = '';
+     $sendFileUrl = defined('N8N_SEND_FILE_URL') && N8N_SEND_FILE_URL;
 
-    if (!function_exists('curl_init')) {
-        throw new RuntimeException('L’extension PHP cURL est indisponible sur ce serveur.');
-    }
+     if (!function_exists('curl_init')) {
+         throw new RuntimeException('L’extension PHP cURL est indisponible sur ce serveur.');
+     }
 
-    if (!class_exists('CURLFile')) {
-        throw new RuntimeException('La classe CURLFile est indisponible sur ce serveur.');
-    }
+     $ch = curl_init(WEBHOOK_INDEXATION_URL);
+     if (!$ch) {
+         throw new Exception('Impossible d\'initialiser cURL');
+     }
 
-    $ch = curl_init(WEBHOOK_INDEXATION_URL);
-    if (!$ch) {
-        throw new Exception('Impossible d\'initialiser cURL');
-    }
-    
-    $cf = new CURLFile($destPath, $mimeType, $originalName);
-    curl_setopt_array($ch, [
-        CURLOPT_RETURNTRANSFER => true,
-        CURLOPT_POST           => true,
-        CURLOPT_POSTFIELDS     => ['file' => $cf, 'filename' => $originalName],
-        CURLOPT_CONNECTTIMEOUT => 15,
-        CURLOPT_TIMEOUT        => 120, // Increased timeout for larger files
-        CURLOPT_SSL_VERIFYPEER => false, // Prevent SSL issues if n8n has self-signed cert
-        CURLOPT_SSL_VERIFYHOST => 0
-    ]);
-    
-    $response = curl_exec($ch);
-    $httpCode = curl_getinfo($ch, CURLINFO_HTTP_CODE);
-    $curlErr  = curl_error($ch);
-    curl_close($ch);
+     $curlOptions = [
+         CURLOPT_RETURNTRANSFER => true,
+         CURLOPT_POST           => true,
+         CURLOPT_CONNECTTIMEOUT => 15,
+         CURLOPT_TIMEOUT        => 120,
+         CURLOPT_SSL_VERIFYPEER => false,
+         CURLOPT_SSL_VERIFYHOST => 0,
+     ];
 
-    if ($response === false) {
-        $response = '';
-    }
+     if ($sendFileUrl) {
+         $documentUrl = buildPublicDocumentUrl($storedName);
+         $curlOptions[CURLOPT_POSTFIELDS] = [
+             'file_url' => $documentUrl,
+         ];
+     } else {
+         if (!class_exists('CURLFile')) {
+             throw new RuntimeException('La classe CURLFile est indisponible sur ce serveur.');
+         }
 
-    if ($curlErr) {
-        $webhookErr = "cURL Error: " . $curlErr;
-    } elseif ($httpCode < 200 || $httpCode >= 300) {
-        $webhookErr = "HTTP {$httpCode}: " . substr($response, 0, 100);
-    } else {
-        $webhookOk = true;
-    }
+         $cf = new CURLFile($destPath, $mimeType, $originalName);
+         $curlOptions[CURLOPT_POSTFIELDS] = [
+             'file'     => $cf,
+             'filename' => $originalName,
+         ];
+     }
+
+     curl_setopt_array($ch, $curlOptions);
+
+     $response = curl_exec($ch);
+     $httpCode = curl_getinfo($ch, CURLINFO_HTTP_CODE);
+     $curlErr  = curl_error($ch);
+     curl_close($ch);
+
+     if ($response === false) {
+         $response = '';
+     }
+
+     if ($curlErr) {
+         $webhookErr = "cURL Error: " . $curlErr;
+     } elseif ($httpCode < 200 || $httpCode >= 300) {
+         $webhookErr = "HTTP {$httpCode}: " . substr($response, 0, 100);
+     } else {
+         $webhookOk = true;
+     }
 
     // ─── Save record to DB ────────────────────────────────────────────────────
     $status = $webhookOk ? 'success' : 'error';
