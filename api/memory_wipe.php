@@ -87,7 +87,7 @@ try {
         exit;
     }
 
-    $collectionUrl = 'http://148.230.120.123:32768/collections/test_rag_v2';
+    $collectionUrl = 'http://148.230.120.123:6333/collections/test_rag_v2';
     $bearerToken = 'iGlWfzD7ykHU5VkURuoXyBuh7sNt4FZ9';
     $headers = [
         'Authorization: Bearer ' . $bearerToken,
