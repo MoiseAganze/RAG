@@ -96,6 +96,10 @@ $activeConvId = isset($activeConvId) ? (int)$activeConvId : 0;
         <div class="user-name"><?php echo htmlspecialchars($user['prenom'] . ' ' . $user['nom']) ?></div>
         <div class="user-role"><?php echo $user['role'] === 'admin_full' ? 'Administrateur' : 'Utilisateur' ?></div>
       </div>
+      <button type="button" onclick="toggleTheme()" title="Changer le thème" style="margin-left:auto;flex-shrink:0;width:34px;height:34px;border-radius:9px;border:1px solid var(--border);background:var(--surface);color:var(--text-muted);cursor:pointer;display:flex;align-items:center;justify-content:center;transition:all var(--transition);">
+        <svg id="sidebar-icon-moon" xmlns="http://www.w3.org/2000/svg" width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M21 12.79A9 9 0 1 1 11.21 3 7 7 0 0 0 21 12.79z"/></svg>
+        <svg id="sidebar-icon-sun" xmlns="http://www.w3.org/2000/svg" width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" style="display:none"><circle cx="12" cy="12" r="5"/><line x1="12" y1="1" x2="12" y2="3"/><line x1="12" y1="21" x2="12" y2="23"/><line x1="4.22" y1="4.22" x2="5.64" y2="5.64"/><line x1="18.36" y1="18.36" x2="19.78" y2="19.78"/><line x1="1" y1="12" x2="3" y2="12"/><line x1="21" y1="12" x2="23" y2="12"/><line x1="4.22" y1="19.78" x2="5.64" y2="18.36"/><line x1="18.36" y1="5.64" x2="19.78" y2="4.22"/></svg>
+      </button>
       <a href="logout.php" title="Déconnexion" style="margin-left:auto;flex-shrink:0;">
         <svg xmlns="http://www.w3.org/2000/svg" width="15" height="15" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="1.8" style="color:var(--text-muted)"><path stroke-linecap="round" stroke-linejoin="round" d="M15.75 9V5.25A2.25 2.25 0 0013.5 3h-6a2.25 2.25 0 00-2.25 2.25v13.5A2.25 2.25 0 007.5 21h6a2.25 2.25 0 002.25-2.25V15M12 9l-3 3m0 0l3 3m-3-3h12.75"/></svg>
       </a>
@@ -108,10 +112,27 @@ $activeConvId = isset($activeConvId) ? (int)$activeConvId : 0;
 <script>
   const sidebar = document.getElementById('sidebar');
   const overlay = document.getElementById('sidebar-overlay');
+  function syncSidebarThemeIcons(theme) {
+    const moon = document.getElementById('sidebar-icon-moon');
+    const sun = document.getElementById('sidebar-icon-sun');
+    if (!moon || !sun) return;
+    moon.style.display = theme === 'dark' ? '' : 'none';
+    sun.style.display = theme === 'light' ? '' : 'none';
+  }
+  function setSidebarTheme(theme) {
+    document.documentElement.setAttribute('data-theme', theme);
+    localStorage.setItem('rag-theme', theme);
+    syncSidebarThemeIcons(theme);
+  }
+  function toggleTheme() {
+    const nextTheme = document.documentElement.getAttribute('data-theme') === 'dark' ? 'light' : 'dark';
+    setSidebarTheme(nextTheme);
+  }
   function toggleSidebar() {
     sidebar.classList.toggle('open');
     overlay.classList.toggle('active');
   }
+  syncSidebarThemeIcons(localStorage.getItem('rag-theme') || document.documentElement.getAttribute('data-theme') || 'dark');
   if (overlay) overlay.addEventListener('click', () => {
     sidebar.classList.remove('open');
     overlay.classList.remove('active');
