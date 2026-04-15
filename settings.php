@@ -53,6 +53,17 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
             $success = 'Mot de passe mis à jour.';
         }
     }
+
+    if ($action === 'wipe_conversations') {
+        if ($user['role'] !== 'admin_full') {
+            $error = 'Accès refusé.';
+        } else {
+            $deletedConversations = (int) $pdo->exec("DELETE FROM conversations");
+            $success = $deletedConversations > 0
+                ? $deletedConversations . ' conversation(s) supprimée(s).'
+                : 'Aucune conversation à supprimer.';
+        }
+    }
 }
 
 // Fresh user data for display
@@ -199,6 +210,17 @@ $dbUser = $dbUser->fetch();
               </div>
               <a href="logout.php" class="btn btn-danger btn-sm">Déconnexion</a>
             </div>
+            <?php if ($user['role'] === 'admin_full'): ?>
+              <div class="divider"></div>
+              <form method="POST" onsubmit="return confirm('Êtes-vous sûr de vouloir supprimer toutes les conversations ? Cette action est irréversible.');" style="display:flex;align-items:center;justify-content:space-between;gap:16px;">
+                <input type="hidden" name="action" value="wipe_conversations" />
+                <div>
+                  <div style="font-size:13.5px;font-weight:500;color:var(--error);">Vider les conversations</div>
+                  <div style="font-size:12.5px;color:var(--text-muted);">Supprime toutes les conversations et leurs messages de la base de données.</div>
+                </div>
+                <button type="submit" class="btn btn-danger btn-sm">Supprimer</button>
+              </form>
+            <?php endif; ?>
           </div>
         </div>
 
