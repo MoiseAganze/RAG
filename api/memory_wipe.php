@@ -87,12 +87,8 @@ try {
         exit;
     }
 
-    $collectionUrl = 'http://148.230.120.123:6333/collections/test_rag_v2';
-    $bearerToken = 'iGlWfzD7ykHU5VkURuoXyBuh7sNt4FZ9';
-    $headers = [
-        'Authorization: Bearer ' . $bearerToken,
-        'Content-Type: application/json',
-    ];
+    $collectionUrl = 'https://n8n.srv859196.hstgr.cloud/webhook/ccb7436c-c50e-4751-81a6-ee0c15deba7c';
+    $headers = [];
 
     $remoteWarnings = [];
 
@@ -118,26 +114,6 @@ try {
             $pdo->rollBack();
         }
         throw $e;
-    }
-
-    $payload = json_encode([
-        'vectors' => [
-            'size' => 3072,
-            'distance' => 'Cosine',
-        ],
-    ]);
-
-    if ($payload === false) {
-        throw new RuntimeException('Impossible de construire la requête de réinitialisation distante.');
-    }
-
-    $putResponse = sendRemoteRequest($collectionUrl, 'PUT', $headers, $payload);
-    if ($putResponse['error'] !== '') {
-        $remoteWarnings[] = 'Recréation distante impossible: ' . $putResponse['error'];
-    }
-
-    if ($putResponse['http_code'] < 200 || $putResponse['http_code'] >= 300) {
-        $remoteWarnings[] = 'Recréation distante échouée: HTTP ' . $putResponse['http_code'];
     }
 
     if (!empty($failedPaths)) {
