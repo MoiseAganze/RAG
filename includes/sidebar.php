@@ -128,13 +128,16 @@ $activeConvId = isset($activeConvId) ? (int)$activeConvId : 0;
     const nextTheme = document.documentElement.getAttribute('data-theme') === 'dark' ? 'light' : 'dark';
     setSidebarTheme(nextTheme);
   }
+  function closeSidebar() {
+    if (sidebar) sidebar.classList.remove('open');
+    if (overlay) overlay.classList.remove('active');
+  }
   function toggleSidebar() {
     sidebar.classList.toggle('open');
     overlay.classList.toggle('active');
   }
   syncSidebarThemeIcons(localStorage.getItem('rag-theme') || document.documentElement.getAttribute('data-theme') || 'dark');
   if (overlay) overlay.addEventListener('click', () => {
-    sidebar.classList.remove('open');
-    overlay.classList.remove('active');
+    closeSidebar();
   });
 </script>

@@ -399,7 +399,7 @@ function formatFileSize(int $b): string {
   function selectConv(id) { window.location.href = `chat.php?conv=${id}`; }
   function deleteConv(id) { /* no-op on this page */ }
   function renameConv(id, t) { /* no-op on this page */ }
-  document.getElementById('new-conv-btn').addEventListener('click', () => { window.location.href = 'chat.php'; });
+  document.getElementById('new-conv-btn').addEventListener('click', () => { window.location.href = 'chat.php?new=1'; });
 </script>
 </body>
 </html>

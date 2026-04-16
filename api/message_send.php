@@ -12,29 +12,48 @@ $body     = json_decode(file_get_contents('php://input'), true);
 $convId   = (int)($body['conv_id'] ?? 0);
 $question = trim($body['question'] ?? '');
 
-if (!$convId || $question === '') {
+if ($question === '') {
     http_response_code(400);
     echo json_encode(['success' => false, 'error' => 'Paramètres manquants']);
     exit;
 }
 
-// Verify conversation ownership
-$check = $pdo->prepare("SELECT id FROM conversations WHERE id = ? AND user_id = ?");
-$check->execute([$convId, $user['id']]);
-if (!$check->fetch()) {
-    http_response_code(404);
-    echo json_encode(['success' => false, 'error' => 'Conversation introuvable']);
-    exit;
-}
+$createdConversation = false;
+$isFirst = false;
 
-// Count existing messages to detect first message
-$countStmt = $pdo->prepare("SELECT COUNT(*) FROM messages WHERE conversation_id = ?");
-$countStmt->execute([$convId]);
-$isFirst = ((int)$countStmt->fetchColumn() === 0);
+if ($convId > 0) {
+    $check = $pdo->prepare("SELECT id FROM conversations WHERE id = ? AND user_id = ?");
+    $check->execute([$convId, $user['id']]);
+    if (!$check->fetch()) {
+        http_response_code(404);
+        echo json_encode(['success' => false, 'error' => 'Conversation introuvable']);
+        exit;
+    }
+
+    $countStmt = $pdo->prepare("SELECT COUNT(*) FROM messages WHERE conversation_id = ?");
+    $countStmt->execute([$convId]);
+    $isFirst = ((int)$countStmt->fetchColumn() === 0);
+} else {
+    $stmt = $pdo->prepare("INSERT INTO conversations (user_id, title) VALUES (?, 'Nouvelle conversation')");
+    $stmt->execute([$user['id']]);
+    $convId = (int) $pdo->lastInsertId();
+    $createdConversation = true;
+    $isFirst = true;
+}
 
 // Save user message
 $ins = $pdo->prepare("INSERT INTO messages (conversation_id, role, content) VALUES (?, ?, ?)");
 $ins->execute([$convId, 'user', $question]);
+
+$newTitle = null;
+if ($isFirst) {
+    $newTitle = substr($question, 0, 72);
+    if (strlen($question) > 72) $newTitle .= '…';
+    $upd = $pdo->prepare("UPDATE conversations SET title = ?, updated_at = NOW() WHERE id = ?");
+    $upd->execute([$newTitle, $convId]);
+} else {
+    $pdo->prepare("UPDATE conversations SET updated_at = NOW() WHERE id = ?")->execute([$convId]);
+}
 
 // Call n8n webhook via cURL
 $answer = null;
@@ -58,7 +77,12 @@ curl_close($ch);
 if ($curlErr || $httpCode < 200 || $httpCode >= 300) {
     $errMsg = $curlErr ?: "Erreur webhook HTTP $httpCode";
     http_response_code(502);
-    echo json_encode(['success' => false, 'error' => $errMsg]);
+    echo json_encode([
+        'success' => false,
+        'error' => $errMsg,
+        'conv_id' => $createdConversation ? $convId : null,
+        'new_title' => $newTitle,
+    ]);
     exit;
 }
 
@@ -75,20 +99,9 @@ if (json_last_error() === JSON_ERROR_NONE) {
 // Save assistant message
 $ins->execute([$convId, 'assistant', $answer]);
 
-// Auto-title on first message
-$newTitle = null;
-if ($isFirst) {
-    $newTitle = substr($question, 0, 72);
-    if (strlen($question) > 72) $newTitle .= '…';
-    $upd = $pdo->prepare("UPDATE conversations SET title = ?, updated_at = NOW() WHERE id = ?");
-    $upd->execute([$newTitle, $convId]);
-} else {
-    // Keep updated_at fresh
-    $pdo->prepare("UPDATE conversations SET updated_at = NOW() WHERE id = ?")->execute([$convId]);
-}
-
 echo json_encode([
     'success'   => true,
+    'conv_id'   => $convId,
     'answer'    => $answer,
     'new_title' => $newTitle,
 ]);

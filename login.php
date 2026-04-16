@@ -24,7 +24,7 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
 
         if ($user && password_verify($password, $user['password_hash'])) {
             loginUser($user);
-            header('Location: chat.php');
+            header('Location: chat.php?new=1');
             exit;
         } else {
             $error = 'Matricule ou mot de passe incorrect.';

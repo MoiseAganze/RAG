@@ -13,6 +13,7 @@ if (!empty($_GET['conv'])) {
     $c->execute([(int)$_GET['conv'], $user['id']]);
     if ($row = $c->fetch()) $activeConvId = (int)$row['id'];
 }
+$startDraft = $activeConvId === 0 && (($_GET['new'] ?? '') === '1');
 ?>
 <!DOCTYPE html>
 <html lang="fr" data-theme="dark">
@@ -252,7 +253,7 @@ if (!empty($_GET['conv'])) {
       <div style="width:24px;"></div>
     </div>
 
-    <?php if (!$activeConvId): ?>
+    <?php if (!$activeConvId && !$startDraft): ?>
       <!-- No conversation selected -->
       <div class="empty-state" id="empty-state">
         <div class="empty-logo">Rag</div>
@@ -291,6 +292,7 @@ if (!empty($_GET['conv'])) {
 
   // ─── State ──────────────────────────────────────────────────────────────
   let currentConvId = <?php echo $activeConvId ?>;
+  let isDraftConversation = <?php echo $startDraft ? 'true' : 'false' ?>;
 
   // ─── Utils ──────────────────────────────────────────────────────────────
   function escapeHtml(s) {
@@ -312,6 +314,31 @@ if (!empty($_GET['conv'])) {
   // ─── Chat helpers ────────────────────────────────────────────────────────
   function getMessages() { return document.getElementById('messages-inner'); }
   function getChatArea() { return document.getElementById('chat-messages'); }
+
+  function renderConversationShell() {
+    const chatCol = document.getElementById('chat-col');
+    chatCol.innerHTML = `
+      <div class="mobile-header">
+        <button class="hamburger-btn" onclick="toggleSidebar()">
+          <svg xmlns="http://www.w3.org/2000/svg" width="24" height="24" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="2"><path stroke-linecap="round" stroke-linejoin="round" d="M4 6h16M4 12h16M4 18h16" /></svg>
+        </button>
+        <div class="mobile-header-title">Rag</div>
+        <div style="width:24px;"></div>
+      </div>
+      <div id="chat-messages"><div id="messages-inner"></div></div>
+      <div class="input-bar">
+        <div class="input-inner">
+          <textarea id="user-input" rows="1" placeholder="Posez votre question…"></textarea>
+          <div class="input-footer">
+            <span class="input-hint">Maj+Entrée pour un saut de ligne</span>
+            <button class="send-btn" id="send-btn" title="Envoyer">
+              <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="currentColor"><path d="M3.478 2.405a.75.75 0 00-.926.94l2.432 7.905H13.5a.75.75 0 010 1.5H4.984l-2.432 7.905a.75.75 0 00.926.94 60.519 60.519 0 0018.445-8.986.75.75 0 000-1.218A60.517 60.517 0 003.478 2.405z"/></svg>
+            </button>
+          </div>
+        </div>
+      </div>`;
+    attachInputEvents();
+  }
 
   function scrollBottom() {
     const c = getChatArea();
@@ -335,6 +362,18 @@ if (!empty($_GET['conv'])) {
       <div class="ai-avatar">R</div>
       <div class="msg-ai-body"><span class="msg-label">RAG</span><div class="bubble-ai markdown-body">${parsed}</div></div>`;
     getMessages().appendChild(el);
+    scrollBottom();
+  }
+
+  function appendWelcomeMsg() {
+    const inner = getMessages();
+    if (!inner) return;
+    const txt = "Bonjour ! Posez-moi une question sur vos documents indexés.";
+    const parsed = typeof marked !== 'undefined' ? DOMPurify.sanitize(marked.parse(txt)) : escapeHtml(txt);
+    const el = document.createElement('div');
+    el.className = 'msg-ai msg-enter';
+    el.innerHTML = `<div class="ai-avatar">R</div><div class="msg-ai-body"><span class="msg-label">RAG</span><div class="bubble-ai markdown-body">${parsed}</div></div>`;
+    inner.appendChild(el);
     scrollBottom();
   }
 
@@ -387,12 +426,7 @@ if (!empty($_GET['conv'])) {
       inner.innerHTML = '';
       if (!data.success) { appendErrMsg('Impossible de charger les messages.'); return; }
       if (data.messages.length === 0) {
-        const el = document.createElement('div');
-        el.className = 'msg-ai msg-enter';
-        const txt = "Bonjour ! Posez-moi une question sur vos documents indexés.";
-        const parsed = typeof marked !== 'undefined' ? DOMPurify.sanitize(marked.parse(txt)) : escapeHtml(txt);
-        el.innerHTML = `<div class="ai-avatar">R</div><div class="msg-ai-body"><span class="msg-label">RAG</span><div class="bubble-ai markdown-body">${parsed}</div></div>`;
-        inner.appendChild(el);
+        appendWelcomeMsg();
       } else {
         data.messages.forEach(m => {
           if (m.role === 'user') appendUserMsg(m.content);
@@ -409,20 +443,30 @@ if (!empty($_GET['conv'])) {
   async function sendMessage() {
     const inp = document.getElementById('user-input');
     const question = inp.value.trim();
-    if (!question || !currentConvId) return;
+    if (!question) return;
+    const draftMode = currentConvId === 0;
     inp.value = '';
     inp.style.height = 'auto';
     appendUserMsg(question);
     setLoading(true);
     appendTyping();
     try {
+      const payload = { question };
+      if (currentConvId) payload.conv_id = currentConvId;
       const res  = await fetch('api/message_send.php', {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify({ conv_id: currentConvId, question }),
+        body: JSON.stringify(payload),
       });
       const data = await res.json();
       removeTyping();
+      if (draftMode && data.conv_id) {
+        currentConvId = data.conv_id;
+        isDraftConversation = false;
+        addConvToSidebar(data.conv_id, data.new_title || 'Nouvelle conversation');
+        setActiveConv(data.conv_id);
+        history.replaceState(null, '', `chat.php?conv=${data.conv_id}`);
+      }
       if (!data.success) { appendErrMsg(data.error || 'Erreur inconnue'); return; }
       appendAiMsg(data.answer);
       if (data.new_title) {
@@ -450,54 +494,49 @@ if (!empty($_GET['conv'])) {
 
   async function selectConv(id, title) {
     if (id === currentConvId) return;
-
-    const chatCol = document.getElementById('chat-col');
-    const empty   = document.getElementById('empty-state');
-
-    if (empty) {
-      chatCol.innerHTML = `
-        <div id="chat-messages"><div id="messages-inner"></div></div>
-        <div class="input-bar">
-          <div class="input-inner">
-            <textarea id="user-input" rows="1" placeholder="Posez votre question…"></textarea>
-            <div class="input-footer">
-              <span class="input-hint">Maj+Entrée pour un saut de ligne</span>
-              <button class="send-btn" id="send-btn" title="Envoyer">
-                <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="currentColor"><path d="M3.478 2.405a.75.75 0 00-.926.94l2.432 7.905H13.5a.75.75 0 010 1.5H4.984l-2.432 7.905a.75.75 0 00.926.94 60.519 60.519 0 0018.445-8.986.75.75 0 000-1.218A60.517 60.517 0 003.478 2.405z"/></svg>
-              </button>
-            </div>
-          </div>
-        </div>`;
-      attachInputEvents();
-    }
-
+    renderConversationShell();
     currentConvId = id;
+    isDraftConversation = false;
     setActiveConv(id);
     history.pushState(null, '', `chat.php?conv=${id}`);
     await loadMessages(id);
   }
 
-  async function newConversation() {
-    try {
-      const res  = await fetch('api/conv_new.php', { method: 'POST' });
-      const data = await res.json();
-      if (!data.success) { showToast('Erreur lors de la création', 'error'); return; }
-      addConvToSidebar(data.id, data.title);
-      await selectConv(data.id, data.title);
-    } catch(e) {
-      showToast('Erreur de connexion', 'error');
+  function renderDraftConversation(updateHistory = true) {
+    renderConversationShell();
+    currentConvId = 0;
+    isDraftConversation = true;
+    setActiveConv(0);
+    if (updateHistory) {
+      history.pushState(null, '', 'chat.php?new=1');
     }
+    appendWelcomeMsg();
+  }
+
+  function newConversation() {
+    if (typeof closeSidebar === 'function') closeSidebar();
+    if (currentConvId === 0 && isDraftConversation) {
+      document.getElementById('user-input')?.focus();
+      return;
+    }
+    renderDraftConversation();
   }
 
   function addConvToSidebar(id, title) {
     const section = document.getElementById('conv-section');
+    const existing = section.querySelector(`.conv-item[data-id="${id}"]`);
+    if (existing) {
+      updateSidebarTitle(id, title);
+      return;
+    }
+    section.querySelector('p')?.remove();
     const today   = section.querySelector('.conv-group-label');
 
     const item = document.createElement('div');
     item.className = 'conv-item';
     item.dataset.id    = id;
     item.dataset.title = title;
-    item.onclick = () => selectConv(id, title);
+    item.onclick = () => selectConv(id, item.dataset.title || title);
     item.innerHTML = `<span class="conv-title">${escapeHtml(title)}</span>`;
 
     if (!today) {
@@ -569,10 +608,14 @@ if (!empty($_GET['conv'])) {
   // ─── Init ────────────────────────────────────────────────────────────────
   document.getElementById('new-conv-btn').addEventListener('click', newConversation);
 
-  attachInputEvents();
-
   if (currentConvId) {
+    attachInputEvents();
     loadMessages(currentConvId);
+  } else if (isDraftConversation) {
+    attachInputEvents();
+    appendWelcomeMsg();
+  } else {
+    attachInputEvents();
   }
 </script>
 </body>

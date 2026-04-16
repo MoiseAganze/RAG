@@ -257,7 +257,7 @@ $dbUser = $dbUser->fetch();
   function selectConv(id) { window.location.href = `chat.php?conv=${id}`; }
   function deleteConv(id) {}
   function renameConv(id, t) {}
-  document.getElementById('new-conv-btn').addEventListener('click', () => { window.location.href = 'chat.php'; });
+  document.getElementById('new-conv-btn').addEventListener('click', () => { window.location.href = 'chat.php?new=1'; });
 </script>
 </body>
 </html>
