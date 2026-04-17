@@ -36,14 +36,18 @@ $activeConvId = isset($activeConvId) ? (int)$activeConvId : 0;
 ?>
 <aside class="sidebar" id="sidebar">
 
-  <div class="sidebar-header">
-    <span class="logo">Rag</span>
-    <button class="new-conv-btn" id="new-conv-btn" title="Nouvelle conversation">
+  <div class="sidebar-header" style="display:flex;flex-direction:column; gap:10px;">
+    <div style="width:100%;display:flex;justify-content:space-between;">
+      <img src="/assets/images/logo.png" alt="" style="width: 48px; height: 48px;">
+       <button class="new-conv-btn" id="new-conv-btn" title="Nouvelle conversation" style="height:36px;">
       <svg xmlns="http://www.w3.org/2000/svg" width="13" height="13" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="2.2">
         <path stroke-linecap="round" stroke-linejoin="round" d="M12 4.5v15m7.5-7.5h-15"/>
       </svg>
       Nouveau
     </button>
+    </div>
+      <p style="font-size:13.5px;color:var(--text);">Assistant IA d'analyse de texte Juridique DGR/KC</p>
+   
   </div>
 
   <div class="conv-section" id="conv-section">

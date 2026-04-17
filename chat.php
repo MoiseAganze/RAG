@@ -249,14 +249,14 @@ $startDraft = $activeConvId === 0 && (($_GET['new'] ?? '') === '1');
       <button class="hamburger-btn" onclick="toggleSidebar()">
         <svg xmlns="http://www.w3.org/2000/svg" width="24" height="24" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="2"><path stroke-linecap="round" stroke-linejoin="round" d="M4 6h16M4 12h16M4 18h16" /></svg>
       </button>
-      <div class="mobile-header-title">Rag</div>
+      <div class="mobile-header-title" style="font-size: 14px;">Retrieval-Augmented Generation</div>
       <div style="width:24px;"></div>
     </div>
 
     <?php if (!$activeConvId && !$startDraft): ?>
       <!-- No conversation selected -->
       <div class="empty-state" id="empty-state">
-        <div class="empty-logo">Rag</div>
+        <div class="empty-logo" style="font-size: 26px;">Assistant IA d’analyse de texte juridique DGR/KC</div>
         <p class="empty-sub">Créez une nouvelle conversation ou sélectionnez-en une dans la liste.</p>
       </div>
     <?php else: ?>
@@ -359,8 +359,8 @@ $startDraft = $activeConvId === 0 && (($_GET['new'] ?? '') === '1');
     el.className = 'msg-ai msg-enter';
     const parsed = typeof marked !== 'undefined' ? DOMPurify.sanitize(marked.parse(text)) : escapeHtml(text);
     el.innerHTML = `
-      <div class="ai-avatar">R</div>
-      <div class="msg-ai-body"><span class="msg-label">RAG</span><div class="bubble-ai markdown-body">${parsed}</div></div>`;
+      <div class="ai-avatar"><img src="/assets/images/logo.png" alt="" style="width:42px;height:42px;" /></div>
+      <div class="msg-ai-body"><span class="msg-label" style="font-size:16px;">IA</span><div class="bubble-ai markdown-body">${parsed}</div></div>`;
     getMessages().appendChild(el);
     scrollBottom();
   }
@@ -368,11 +368,11 @@ $startDraft = $activeConvId === 0 && (($_GET['new'] ?? '') === '1');
   function appendWelcomeMsg() {
     const inner = getMessages();
     if (!inner) return;
-    const txt = "Bonjour ! Posez-moi une question sur vos documents indexés.";
+    const txt = "Bonjour ! Je suis votre Assistant IA d’analyse de texte juridique DGR/KC.";
     const parsed = typeof marked !== 'undefined' ? DOMPurify.sanitize(marked.parse(txt)) : escapeHtml(txt);
     const el = document.createElement('div');
     el.className = 'msg-ai msg-enter';
-    el.innerHTML = `<div class="ai-avatar">R</div><div class="msg-ai-body"><span class="msg-label">RAG</span><div class="bubble-ai markdown-body">${parsed}</div></div>`;
+    el.innerHTML = `<div class="ai-avatar"><img src="/assets/images/logo.png" alt="" style="width:42px;height:42px;" /></div><div class="msg-ai-body"><span class="msg-label" style="font-size:16px;">IA</span><div class="bubble-ai markdown-body">${parsed}</div></div>`;
     inner.appendChild(el);
     scrollBottom();
   }

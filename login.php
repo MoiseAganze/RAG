@@ -113,8 +113,8 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
   <div class="login-box">
 
     <div class="login-header">
-      <span class="login-logo">Rag</span>
-      <p class="login-sub">Assistant de recherche documentaire</p>
+      <span class="login-logo">Retrieval-Augmented Generation</span>
+      <p class="login-sub">Assistant IA de Traitement de textes juridiques DGR/KC</p>
     </div>
 
     <div class="login-card">
